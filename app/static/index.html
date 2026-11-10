@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FinPay — Institutional Campus Payments & Ledger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #eef2ff 0%, #f8fafc 40%, #e0e7ff 100%);
+      --glass-surface: rgba(255, 255, 255, 0.82);
+      --glass-surface-subtle: rgba(248, 250, 252, 0.72);
+      --glass-border: rgba(255, 255, 255, 0.92);
+      --glass-border-subtle: rgba(226, 232, 240, 0.75);
+      --ink: #0f172a;
+      --ink-secondary: #334155;
+      --ink-muted: #64748b;
+      --border-focus: #0f172a;
+      --primary: #0f172a;
+      --primary-hover: #1e293b;
+      --primary-text: #ffffff;
+      --positive: #047857;
+      --positive-bg: rgba(240, 253, 244, 0.85);
+      --positive-border: #bbf7d0;
+      --negative: #b91c1c;
+      --negative-bg: rgba(254, 242, 242, 0.85);
+      --negative-border: #fecaca;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --glass-shadow: 0 10px 30px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.03);
+      --glass-shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.04);
+      --glass-shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.08);
+      --sidebar-width: 260px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient glassmorphic light orbs */
+    body::before {
+      content: '';
+      position: fixed;
+      width: 650px;
+      height: 650px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(199, 210, 254, 0.45) 0%, rgba(224, 231, 255, 0) 70%);
+      top: -160px;
+      right: -120px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      width: 550px;
+      height: 550px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(224, 231, 255, 0.55) 0%, rgba(241, 245, 249, 0) 70%);
+      bottom: -120px;
+      left: -120px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Bar */
+    header {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1.5px solid var(--glass-border);
+      padding: 0 28px;
+      height: 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      box-shadow: var(--glass-shadow-sm);
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      background: var(--primary);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+    }
+
+    .brand-icon svg { width: 16px; height: 16px; }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.3px;
+      color: var(--ink);
+    }
+
+    .brand-tag {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--ink-secondary);
+      border: 1px solid var(--glass-border-subtle);
+      padding: 2px 7px;
+      border-radius: 5px;
+    }
+
+    .user-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-profile {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 6px;
+    }
+
+    .role-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #ffffff;
+      border: 1px solid var(--glass-border-subtle);
+      color: var(--ink);
+    }
+
+    /* App Shell */
+    .app-shell {
+      display: flex;
+      width: 100%;
+      min-height: calc(100vh - 60px);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Role Sidebar */
+    .role-sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-right: 1.5px solid var(--glass-border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 60px;
+      height: calc(100vh - 60px);
+      box-shadow: 2px 0 12px rgba(15, 23, 42, 0.02);
+    }
+
+    @media (max-width: 860px) {
+      .app-shell { flex-direction: column; }
+      .role-sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1.5px solid var(--glass-border);
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px 16px;
+        gap: 8px;
+      }
+      .sidebar-bottom { display: none !important; }
+    }
+
+    .sidebar-section-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--ink-muted);
+      padding: 0 10px;
+      margin-bottom: 10px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--ink-muted);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      transition: stroke 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--ink);
+      border-color: var(--glass-border-subtle);
+    }
+
+    .nav-item:hover svg { stroke: var(--ink); }
+
+    .nav-item.active {
+      background: #ffffff;
+      color: var(--ink);
+      font-weight: 600;
+      border-color: var(--glass-border-subtle);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+
+    .nav-item.active svg { stroke: var(--ink); }
+
+    .sidebar-bottom {
+      border-top: 1.5px solid var(--glass-border-subtle);
+      padding-top: 14px;
+      margin-top: auto;
+    }
+
+    /* Content Area & Page Views */
+    .content-area {
+      flex: 1;
+      padding: 28px 36px 48px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      margin-bottom: 22px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.4px;
+    }
+
+    .page-subtitle {
+      font-size: 13px;
+      color: var(--ink-muted);
+      margin-top: 3px;
+    }
+
+    /* Sub-Page Visibility & Transitions */
+    .sub-page {
+      display: none;
+    }
+
+    .sub-page.active {
+      display: block;
+      animation: pageFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes pageFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--glass-surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 22px;
+      box-shadow: var(--glass-shadow);
+      transition: box-shadow 0.18s ease;
+    }
+
+    .card:hover { box-shadow: var(--glass-shadow-lg); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .label-muted {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--ink-muted);
+      margin-bottom: 6px;
+    }
+
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.2px;
+      margin-bottom: 16px;
+    }
+
+    .metric-value {
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.6px;
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--ink-muted);
+      margin-top: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Inputs */
+    .form-group { margin-bottom: 14px; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      margin-bottom: 6px;
+      text-transform: capitalize;
+    }
+
+    input, select {
+      font: inherit;
+      height: 40px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--glass-border-subtle);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      color: var(--ink);
+      width: 100%;
+      margin-bottom: 12px;
+      font-size: 13.5px;
+      transition: all 0.15s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      background: #ffffff;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+    }
+
+    input::placeholder { color: #94a3b8; }
+
+    /* Buttons */
+    button {
+      font: inherit;
+      height: 40px;
+      padding: 0 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--primary);
+      background: var(--primary);
+      color: var(--primary-text);
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 13px;
+      width: 100%;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+    }
+
+    button:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+    }
+
+    button:active { transform: translateY(0); }
+
+    button.sec {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      color: var(--ink-secondary);
+      border: 1.5px solid var(--glass-border);
+      width: auto;
+      height: 32px;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 500;
+      box-shadow: none;
+    }
+
+    button.sec:hover {
+      background: #ffffff;
+      color: var(--ink);
+      border-color: var(--border-focus);
+      transform: none;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      background: rgba(241, 245, 249, 0.7);
+      backdrop-filter: blur(8px);
+      padding: 4px;
+      border-radius: 8px;
+      gap: 4px;
+      margin-bottom: 22px;
+      border: 1px solid var(--glass-border-subtle);
+    }
+
+    .tabs button {
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      color: var(--ink-muted);
+      height: 34px;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: none;
+    }
+
+    .tabs button:hover {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.5);
+      transform: none;
+    }
+
+    .tabs button.on {
+      color: var(--ink);
+      font-weight: 600;
+      background: #ffffff;
+      box-shadow: var(--glass-shadow-sm);
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(12px);
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      background: rgba(248, 250, 252, 0.8);
+      color: var(--ink-muted);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1.5px solid var(--glass-border-subtle);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+      color: var(--ink-secondary);
+      vertical-align: middle;
+      font-variant-numeric: tabular-nums;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.65); }
+    .numeric { text-align: right; }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .badge-ok {
+      background: var(--positive-bg);
+      color: var(--positive);
+      border: 1px solid var(--positive-border);
+    }
+
+    .badge-bad {
+      background: var(--negative-bg);
+      color: var(--negative);
+      border: 1px solid var(--negative-border);
+    }
+
+    .badge-neutral {
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--ink-secondary);
+      border: 1px solid var(--glass-border-subtle);
+    }
+
+    .pos { color: var(--positive); font-weight: 600; }
+    .neg { color: var(--negative); font-weight: 600; }
+
+    .id-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11.5px;
+      color: var(--ink-muted);
+    }
+
+    /* Auth Wrapper */
+    .auth-wrapper {
+      max-width: 880px;
+      margin: 40px auto;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .auth-wrapper { grid-template-columns: 1fr; }
+    }
+
+    .auth-box {
+      background: var(--glass-surface);
+      backdrop-filter: blur(20px);
+      border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .auth-heading { margin-bottom: 20px; }
+    .auth-heading h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+    .auth-heading p { font-size: 13px; color: var(--ink-muted); }
+
+    /* Demo Panel */
+    .demo-panel {
+      background: var(--glass-surface);
+      backdrop-filter: blur(20px);
+      border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--glass-shadow);
+    }
+
+    .demo-heading {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .demo-sub { font-size: 12px; color: var(--ink-muted); margin-bottom: 16px; }
+
+    .demo-card {
+      border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      transition: all 0.15s ease;
+    }
+
+    .demo-card:hover {
+      border-color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.95);
+      transform: translateY(-1px);
+    }
+
+    .demo-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .demo-role-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+    .demo-cred-line {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11.5px;
+      color: var(--ink-muted);
+      margin-bottom: 3px;
+    }
+
+    .demo-btn {
+      margin-top: 8px;
+      height: 32px;
+      font-size: 11.5px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ink-secondary);
+      border: 1px solid var(--glass-border-subtle);
+      box-shadow: none;
+    }
+
+    .demo-btn:hover {
+      background: var(--ink);
+      color: #ffffff;
+      border-color: var(--ink);
+      transform: none;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(10px);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 500;
+      display: none;
+      z-index: 100;
+      box-shadow: var(--glass-shadow-lg);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .hide { display: none !important; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand-wrap">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="20" height="14" x="2" y="5" rx="2"/>
+        <line x1="2" x2="22" y1="10" y2="10"/>
+      </svg>
+    </div>
+    <span class="brand-title">FinPay</span>
+    <span class="brand-tag">Campus Ledger</span>
+  </div>
+  <div class="user-nav">
+    <div id="who" class="user-profile hide"></div>
+    <button class="sec hide" id="out" onclick="logout()">Sign Out</button>
+  </div>
+</header>
+
+<main id="main"></main>
+<div id="toast"></div>
+
+<script>
+let token = null, user = null;
+try { token = sessionStorage.getItem("t"); } catch(e) {}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const inr = n => "₹" + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const dt = s => new Date(s + "Z").toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
+const uuid = () => 'idemp-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now();
+
+function toast(msg, ok = true) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.style.background = ok ? "rgba(15, 23, 42, 0.92)" : "rgba(153, 27, 27, 0.95)";
+  t.style.display = "block";
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.display = "none"; }, 3500);
+}
+
+async function api(path, method = "GET", body) {
+  const r = await fetch(path, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: "Bearer " + token } : {})
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    let m = d.detail;
+    if (Array.isArray(m)) m = m.map(x => x.msg).join(", ");
+    throw new Error(m || "Request failed");
+  }
+  return d;
+}
+
+const run = async f => {
+  try {
+    await f();
+  } catch(e) {
+    toast(e.message, false);
+  }
+};
+
+/* Multi-Page Navigation Handler */
+function navigateToPage(pageId, navId) {
+  document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const targetPage = $(pageId);
+  const targetNav = $(navId);
+  if (targetPage) targetPage.classList.add('active');
+  if (targetNav) targetNav.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function authView(mode = "login") {
+  $("who").classList.add("hide");
+  $("who").innerHTML = "";
+  $("out").classList.add("hide");
+
+  $("main").innerHTML = `
+    <div class="auth-wrapper">
+      <div class="auth-box">
+        <div class="auth-heading">
+          <h1>${mode === 'login' ? 'Institutional Sign In' : 'Account Registration'}</h1>
+          <p>${mode === 'login' ? 'Authenticate with your campus credentials' : 'Create a new campus digital wallet or merchant profile'}</p>
+        </div>
+
+        <div class="tabs">
+          <button class="${mode === 'login' ? 'on' : ''}" onclick="authView('login')">Sign In</button>
+          <button class="${mode === 'register' ? 'on' : ''}" onclick="authView('register')">Register New Account</button>
+        </div>
+
+        <form onsubmit="return submitAuth(event, '${mode}')">
+          ${mode === "register" ? `
+            <div class="form-group">
+              <label for="a_name">Full Legal Name</label>
+              <input id="a_name" placeholder="e.g. Rachel Green" required autocomplete="name">
+            </div>
+          ` : ''}
+
+          <div class="form-group">
+            <label for="a_email">Campus Email</label>
+            <input id="a_email" type="email" placeholder="name@campus.edu" required autocomplete="email">
+          </div>
+
+          <div class="form-group">
+            <label for="a_pass">Password</label>
+            <input id="a_pass" type="password" placeholder="At least 6 characters" required autocomplete="current-password">
+          </div>
+
+          ${mode === "register" ? `
+            <div class="form-group">
+              <label for="a_role">Select Account Type</label>
+              <select id="a_role">
+                <option value="student">Student (Digital Wallet & Instant Cashback)</option>
+                <option value="merchant">Merchant (Store & Payment Processing)</option>
+                <option value="admin">Administrator (Audit & Monthly Settlement)</option>
+              </select>
+            </div>
+          ` : ''}
+
+          <button style="margin-top: 8px;">
+            ${mode === "login" ? "Authenticate" : "Create Account & Sign In"}
+          </button>
+        </form>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-heading">Instant Demo Access</div>
+        <div class="demo-sub">Select any pre-configured role below to log in instantly:</div>
+
+        <div class="demo-card">
+          <div class="demo-card-top">
+            <span class="demo-role-name">Student Profile</span>
+            <span class="badge badge-neutral">Preloaded ₹1,000</span>
+          </div>
+          <div class="demo-cred-line">student@campus.edu</div>
+          <div class="demo-cred-line" style="color:#94a3b8;">password: password123</div>
+          <button type="button" class="demo-btn" onclick="quickLogin('student@campus.edu', 'password123')">
+            Sign In as Student
+          </button>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-card-top">
+            <span class="demo-role-name">Merchant Profile</span>
+            <span class="badge badge-neutral">Campus Canteen</span>
+          </div>
+          <div class="demo-cred-line">canteen@campus.edu</div>
+          <div class="demo-cred-line" style="color:#94a3b8;">password: password123</div>
+          <button type="button" class="demo-btn" onclick="quickLogin('canteen@campus.edu', 'password123')">
+            Sign In as Merchant
+          </button>
+        </div>
+
+        <div class="demo-card">
+          <div class="demo-card-top">
+            <span class="demo-role-name">Administrator</span>
+            <span class="badge badge-neutral">Auditor</span>
+          </div>
+          <div class="demo-cred-line">admin@campus.edu</div>
+          <div class="demo-cred-line" style="color:#94a3b8;">password: password123</div>
+          <button type="button" class="demo-btn" onclick="quickLogin('admin@campus.edu', 'password123')">
+            Sign In as Administrator
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function quickLogin(email, password) {
+  $("a_email").value = email;
+  $("a_pass").value = password;
+  submitAuth({ preventDefault: () => {} }, "login");
+}
+
+function submitAuth(e, mode) {
+  e.preventDefault();
+  run(async () => {
+    const email = $("a_email").value.trim();
+    const password = $("a_pass").value;
+
+    if (mode === "register") {
+      await api("/auth/register", "POST", {
+        name: $("a_name").value.trim(),
+        email,
+        password,
+        role: $("a_role").value
+      });
+      toast("Account registered successfully");
+    }
+
+    const d = await api("/auth/login", "POST", { email, password });
+    token = d.access_token;
+    try { sessionStorage.setItem("t", token); } catch(err) {}
+    await enter();
+  });
+  return false;
+}
+
+function logout() {
+  token = null;
+  user = null;
+  try { sessionStorage.removeItem("t"); } catch(e) {}
+  authView();
+}
+
+async function enter() {
+  try {
+    user = await api("/auth/me");
+  } catch(e) {
+    return logout();
+  }
+
+  $("who").innerHTML = `<span>${esc(user.name)}</span> <span class="role-tag">${esc(user.role)}</span>`;
+  $("who").classList.remove("hide");
+  $("out").classList.remove("hide");
+
+  const handlers = { student, merchant, admin };
+  if (handlers[user.role]) {
+    handlers[user.role]();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   STUDENT PORTAL: MULTI-PAGE APPLICATION
+   ══════════════════════════════════════════════════════════════════ */
+async function student() {
+  await run(async () => {
+    const [bal, ms, led, pays, rulesData] = await Promise.all([
+      api("/wallet/balance"),
+      api("/merchants"),
+      api("/wallet/history"),
+      api("/payments/history"),
+      api("/cashback/rules")
+    ]);
+
+    const mn = Object.fromEntries(ms.map(m => [m.id, m]));
+    const tier = bal.tier || "BASIC";
+
+    $("main").innerHTML = `
+      <div class="app-shell">
+        <!-- Student Sidebar -->
+        <aside class="role-sidebar">
+          <div class="sidebar-section-title">Student Portal</div>
+          <nav class="sidebar-nav">
+            <button class="nav-item active" id="nav_stu_overview" onclick="navigateToPage('page_stu_overview', 'nav_stu_overview')">
+              <svg viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+              <span>Balance & Overview</span>
+            </button>
+            <button class="nav-item" id="nav_stu_topup" onclick="navigateToPage('page_stu_topup', 'nav_stu_topup')">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              <span>Deposit Funds</span>
+            </button>
+            <button class="nav-item" id="nav_stu_pay" onclick="navigateToPage('page_stu_pay', 'nav_stu_pay')">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4"/><path d="M12 16V8"/></svg>
+              <span>Pay Merchant</span>
+            </button>
+            <button class="nav-item" id="nav_stu_rules" onclick="navigateToPage('page_stu_rules', 'nav_stu_rules')">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+              <span>Cashback Rules (3NF)</span>
+            </button>
+            <button class="nav-item" id="nav_stu_history" onclick="navigateToPage('page_stu_history', 'nav_stu_history')">
+              <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              <span>Payment History</span>
+            </button>
+            <button class="nav-item" id="nav_stu_ledger" onclick="navigateToPage('page_stu_ledger', 'nav_stu_ledger')">
+              <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>Wallet Ledger</span>
+            </button>
+          </nav>
+          <div class="sidebar-bottom">
+            <div style="font-size: 11.5px; color: var(--ink-muted); margin-bottom: 8px;">Tier Multiplier: <b>${tier === 'PREMIUM' ? '2.0x' : (tier === 'PRIME' ? '1.5x' : '1.0x')}</b></div>
+            <button class="sec" style="width: 100%; font-size: 11.5px;" onclick="logout()">Sign Out</button>
+          </div>
+        </aside>
+
+        <!-- Pages Content Container -->
+        <div class="content-area">
+          
+          <!-- Page 1: Overview & Balance -->
+          <div id="page_stu_overview" class="sub-page active">
+            <div class="page-header">
+              <h1 class="page-title">Balance & Account Overview</h1>
+              <p class="page-subtitle">Real-time digital balance, membership tier, and fast actions</p>
+            </div>
+
+            <div class="grid">
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="label-muted">Available Balance</div>
+                    <div class="metric-value">${inr(bal.balance)}</div>
+                  </div>
+                  <span class="badge badge-neutral">${tier} TIER</span>
+                </div>
+                <div class="metric-sub">${(bal.balance_paise || (bal.balance * 100)).toLocaleString('en-IN')} integer paise</div>
+
+                <div style="margin-top: 24px; display: flex; align-items: center; justify-content: space-between; border-top: 1.5px solid var(--glass-border-subtle); padding-top: 14px;">
+                  <span style="font-size: 12px; color: var(--ink-muted); font-weight: 500;">Membership Tier:</span>
+                  <select id="s_tier" style="width: auto; margin-bottom: 0; height: 32px; font-size: 12px; padding: 4px 8px;" onchange="changeTier(this.value)">
+                    <option value="BASIC" ${tier === 'BASIC' ? 'selected' : ''}>Basic (1.0x Multiplier)</option>
+                    <option value="PRIME" ${tier === 'PRIME' ? 'selected' : ''}>Prime (1.5x Multiplier)</option>
+                    <option value="PREMIUM" ${tier === 'PREMIUM' ? 'selected' : ''}>Premium (2.0x Multiplier)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+                <div>
+                  <div class="label-muted">Quick Shortcuts</div>
+                  <h2>Manage Funds & Pay</h2>
+                  <p style="font-size: 13px; color: var(--ink-muted); margin-bottom: 16px;">
+                    Send money to campus canteens or bookstores with instant calculated cashback rewards.
+                  </p>
+                </div>
+                <div style="display:flex; gap: 10px;">
+                  <button onclick="navigateToPage('page_stu_topup', 'nav_stu_topup')">Deposit Money</button>
+                  <button class="sec" style="height: 40px; flex: 1;" onclick="navigateToPage('page_stu_pay', 'nav_stu_pay')">Make Payment</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Page 2: Deposit Funds -->
+          <div id="page_stu_topup" class="sub-page">
+            <div class="page-header">
+              <h1 class="page-title">Deposit Funds</h1>
+              <p class="page-subtitle">Add money to your campus digital wallet</p>
+            </div>
+
+            <div class="card" style="max-width: 540px;">
+              <form onsubmit="return topup(event)">
+                <div class="form-group">
+                  <label for="t_amt">Deposit Amount (₹)</label>
+                  <input id="t_amt" type="number" min="1" step="0.01" placeholder="Enter amount (e.g. 1000)" required>
+                </div>
+                <div style="display:flex; gap:8px; margin-bottom: 16px;">
+                  <button type="button" class="sec" style="flex:1;" onclick="$('t_amt').value=200">+₹200</button>
+                  <button type="button" class="sec" style="flex:1;" onclick="$('t_amt').value=500">+₹500</button>
+                  <button type="button" class="sec" style="flex:1;" onclick="$('t_amt').value=1000">+₹1,000</button>
+                  <button type="button" class="sec" style="flex:1;" onclick="$('t_amt').value=2000">+₹2,000</button>
+                </div>
+                <button>Authorize Deposit</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Page 3: Pay Merchant -->
+          <div id="page_stu_pay" class="sub-page">
+            <div class="page-header">
+              <h1 class="page-title">Pay Campus Merchant</h1>
+              <p class="page-subtitle">Direct peer-to-merchant payments with atomic execution</p>
+            </div>
+
+            <div class="card" style="max-width: 600px;">
+              ${ms.length ? `
+                <form onsubmit="return pay(event)">
+                  <div class="form-group">
+                    <label for="p_m">Select Campus Merchant</label>
+                    <select id="p_m">
+                      ${ms.map(m => `<option value="${m.id}">${esc(m.business_name)} [Category: ${esc(m.category)}]</option>`).join("")}
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="p_amt">Amount (₹)</label>
+                    <input id="p_amt" type="number" min="0.01" step="0.01" placeholder="Enter payment amount" required>
+                  </div>
+                  <p style="font-size: 12px; color: var(--ink-muted); margin-bottom: 16px;">
+                    Secured by unique client-generated Idempotency Key. Duplicate submissions will not debit your balance twice.
+                  </p>
+                  <button>Authorize Payment</button>
+                </form>
+              ` : `
+                <p style="font-size: 13.5px; color: var(--ink-muted); padding: 12px 0;">No registered campus merchants found.</p>
+              `}
+            </div>
+          </div>
+
+          <!-- Page 4: Cashback Schedule -->
+          <div id="page_stu_rules" class="sub-page">
+            <div class="page-header">
+              <h1 class="page-title">Campus Cashback Schedule</h1>
+              <p class="page-subtitle">3NF Normalized rules, basis points, and calendar monthly caps</p>
+            </div>
+
+            <div class="card">
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Base Rate (Bps)</th>
+                      <th>Standard Rate</th>
+                      <th>Monthly Cap</th>
+                      <th>Your Tier Multiplier</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${(rulesData.categories || []).map(r => `
+                      <tr>
+                        <td><b>${esc(r.category)}</b></td>
+                        <td>${r.base_rate_bps} Bps</td>
+                        <td class="pos">${r.base_rate_percent}%</td>
+                        <td>${inr(r.base_monthly_cap_rupees)} / mo</td>
+                        <td>${tier === 'PREMIUM' ? '2.0x' : (tier === 'PRIME' ? '1.5x' : '1.0x')}</td>
+                      </tr>
+                    `).join("")}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Page 5: Payment History -->
+          <div id="page_stu_history" class="sub-page">
+            <div class="page-header">
+              <h1 class="page-title">Payment History</h1>
+              <p class="page-subtitle">Review all student-to-merchant payments and awarded rewards</p>
+            </div>
+
+            <div class="card">
+              ${pays.length ? `
+                <div class="table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Reference</th>
+                        <th>Merchant</th>
+                        <th>Category</th>
+                        <th class="numeric">Amount</th>
+                        <th class="numeric">Cashback Awarded</th>
+                        <th>Idempotency Key</th>
+                        <th>Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${pays.map(p => {
+                        const m = mn[p.merchant_id];
+                        return `
+                          <tr>
+                            <td class="id-code">#${p.id}</td>
+                            <td><b>${esc(m ? m.business_name : 'Merchant #' + p.merchant_id)}</b></td>
+                            <td><span class="badge badge-neutral">${esc(m ? m.category : 'CANTEEN')}</span></td>
+                            <td class="numeric">${inr(p.amount)}</td>
+                            <td class="numeric pos">+${inr(p.cashback)}</td>
+                            <td class="id-code">${esc(p.idempotency_key || '-')}</td>
+                            <td style="color: var(--ink-muted); font-size: 12px;">${dt(p.created_at)}</td>
+                          </tr>
+                        `;
+                      }).join("")}
+                    </tbody>
+                  </table>
+                </div>
+              ` : `<p style="font-size: 13.5px; color: var(--ink-muted);">No payment records found.</p>`}
+            </div>
+          </div>
+
+          <!-- Page 6: Wallet Ledger -->
+          <div id="page_stu_ledger" class="sub-page">
+            <div class="page-header">
+              <h1 class="page-title">Wallet Ledger (Audit Log)</h1>
+              <p class="page-subtitle">Immutable double-entry balance log verified during monthly reconciliation</p>
+            </div>
+
+            <div class="card">
+              ${led.length ? `
+                <div class="table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Entry Type</th>
+                        <th class="numeric">Amount (₹)</th>
+                        <th class="numeric">Integer Value</th>
+                        <th>Reference Note</th>
+                        <th>Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${led.map(l => `
+                        <tr>
+                          <td><span class="badge ${l.amount >= 0 ? 'badge-ok' : 'badge-bad'}">${esc(l.entry_type)}</span></td>
+                          <td class="numeric ${l.amount >= 0 ? 'pos' : 'neg'}">${l.amount >= 0 ? '+' : ''}${inr(l.amount)}</td>
+                          <td class="numeric id-code">${(l.amount_paise || (l.amount * 100)).toLocaleString('en-IN')} p</td>
+                          <td>${esc(l.reference || '-')}</td>
+                          <td style="color: var(--ink-muted); font-size: 12px;">${dt(l.created_at)}</td>
+                        </tr>
+                      `).join("")}
+                    </tbody>
+                  </table>
+                </div>
+              ` : `<p style="font-size: 13.5px; color: var(--ink-muted);">No ledger entries recorded.</p>`}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+  });
+}
+
+function changeTier(tier) {
+  run(async () => {
+    await api("/wallet/tier", "POST", { tier });
+    toast(`Tier changed to ${tier}`);
+    student();
+  });
+}
+
+function topup(e) {
+  e.preventDefault();
+  run(async () => {
+    const val = +$("t_amt").value;
+    await api("/wallet/topup", "POST", { amount: val });
+    toast(`Account credited: ${inr(val)}`);
+    student();
+  });
+  return false;
+}
+
+function pay(e) {
+  e.preventDefault();
+  run(async () => {
+    const idempotencyKey = uuid();
+    const r = await api("/payments", "POST", {
+      merchant_id: +$("p_m").value,
+      amount: +$("p_amt").value,
+      idempotency_key: idempotencyKey
+    });
+    toast(r.cashback > 0 ? `Authorized. Cashback of ${inr(r.cashback)} credited.` : "Payment completed successfully");
+    student();
+  });
+  return false;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MERCHANT PORTAL: MULTI-PAGE APPLICATION
+   ══════════════════════════════════════════════════════════════════ */
+async function merchant() {
+  await run(async () => {
+    let me = null;
+    try { me = await api("/merchants/me"); } catch(e) {}
+
+    if (!me) {
+      $("main").innerHTML = `
+        <div class="auth-wrapper" style="grid-template-columns: 1fr; max-width: 440px;">
+          <div class="auth-box">
+            <div class="auth-heading">
+              <h1>Merchant Registration</h1>
+              <p>Onboard your campus store into the FinPay system</p>
+            </div>
+            <form onsubmit="return mkMerchant(event)">
+              <div class="form-group">
+                <label for="m_name">Business Entity Name</label>
+                <input id="m_name" placeholder="e.g. Central Campus Cafeteria" required>
+              </div>
+              <div class="form-group">
+                <label for="m_cat">Merchant Category</label>
+                <select id="m_cat">
+                  <option value="CANTEEN">CANTEEN (2.0% Base Rate, ₹50 Cap)</option>
+                  <option value="STATIONERY">STATIONERY (1.0% Base Rate, ₹20 Cap)</option>
+                  <option value="TRANSPORT">TRANSPORT (3.0% Base Rate, ₹100 Cap)</option>
+                  <option value="HOSTEL">HOSTEL (0.5% Base Rate, ₹200 Cap)</option>
+                  <option value="ONLINE">ONLINE (1.0% Base Rate, ₹30 Cap)</option>
+                </select>
+              </div>
+              <button>Register Merchant</button>
+            </form>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const rec = await api("/payments/received");
+    const total = rec.reduce((s, p) => s + p.amount, 0);
+
+    $("main").innerHTML = `
+      <div class="app-shell">
+        <!-- Merchant Sidebar -->
+        <aside class="role-sidebar">
+          <div class="sidebar-section-title">Merchant Portal</div>
+          <nav class="sidebar-nav">
+            <button class="nav-item active" id="nav_mer_overview" onclick="navigateToPage('page_mer_overview', 'nav_mer_overview')">
+              <svg viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/></svg>
+              <span>Store Analytics</span>
+            </button>
+            <button class="nav-item" id="nav_mer_inbound" onclick="navigateToPage('page_mer_inbound', 'nav_mer_inbound')">
+              <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              <span>Inbound Payments</span>
+            </button>
+          </nav>
+          <div class="sidebar-bottom">
+            <div style="font-size: 11.5px; color: var(--ink-muted); margin-bottom: 8px;">Store ID: <b>#${me.id}</b></div>
+            <button class="sec" style="width: 100%; font-size: 11.5px;" onclick="logout()">Sign Out</button>
+          </div>
+        </aside>
+
+        <!-- Merchant Pages Container -->
+        <div class="content-area">
+          
+          <!-- Page: Store Analytics -->
+          <div id="page_mer_overview" class="sub-page active">
+            <div class="page-header">
+              <h1 class="page-title">Store Analytics & Profile</h1>
+              <p class="page-subtitle">Track payment volume, category fees, and business details</p>
+            </div>
+
+            <div class="grid">
+              <div class="card">
+                <div class="label-muted">Business Profile</div>
+                <div class="metric-value" style="font-size: 24px;">${esc(me.business_name)}</div>
+                <div class="metric-sub">Account ID: #${me.id} &bull; Classification: <span class="badge badge-neutral">${esc(me.category)}</span></div>
+              </div>
+
+              <div class="card">
+                <div class="label-muted">Aggregate Inflow</div>
+                <div class="metric-value">${inr(total)}</div>
+                <div class="metric-sub">${rec.length} transactions processed</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Page: Inbound Payments -->
+          <div id="page_mer_inbound" class="sub-page">
+            <div class="page-header">
+              <h1 class="page-title">Inbound Customer Payments</h1>
+              <p class="page-subtitle">Verified customer payments processed through student wallets</p>
+            </div>
+
+            <div class="card">
+              ${rec.length ? `
+                <div class="table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Txn ID</th>
+                        <th>Customer Wallet</th>
+                        <th class="numeric">Gross Amount</th>
+                        <th>Idempotency Reference</th>
+                        <th>Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${rec.map(p => `
+                        <tr>
+                          <td class="id-code">#${p.id}</td>
+                          <td>Wallet #${p.wallet_id || p.student_id}</td>
+                          <td class="numeric pos">${inr(p.amount)}</td>
+                          <td class="id-code">${esc(p.idempotency_key || '-')}</td>
+                          <td style="color: var(--ink-muted); font-size: 12px;">${dt(p.created_at)}</td>
+                        </tr>
+                      `).join("")}
+                    </tbody>
+                  </table>
+                </div>
+              ` : `<p style="font-size: 13.5px; color: var(--ink-muted);">No inbound transactions recorded.</p>`}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+  });
+}
+
+function mkMerchant(e) {
+  e.preventDefault();
+  run(async () => {
+    await api("/merchants", "POST", {
+      business_name: $("m_name").value.trim(),
+      category: $("m_cat").value.trim()
+    });
+    toast("Merchant account configured");
+    merchant();
+  });
+  return false;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ADMIN PORTAL: MULTI-PAGE APPLICATION
+   ══════════════════════════════════════════════════════════════════ */
+async function admin() {
+  const n = new Date();
+  $("main").innerHTML = `
+    <div class="app-shell">
+      <!-- Admin Sidebar -->
+      <aside class="role-sidebar">
+        <div class="sidebar-section-title">Audit Portal</div>
+        <nav class="sidebar-nav">
+          <button class="nav-item active" id="nav_adm_recon" onclick="navigateToPage('page_adm_recon', 'nav_adm_recon')">
+            <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Statement Audit</span>
+          </button>
+          <button class="nav-item" id="nav_adm_settle" onclick="navigateToPage('page_adm_settle', 'nav_adm_settle')">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Merchant Settlements</span>
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div style="font-size: 11.5px; color: var(--ink-muted); margin-bottom: 8px;">Role: <b>System Auditor</b></div>
+          <button class="sec" style="width: 100%; font-size: 11.5px;" onclick="logout()">Sign Out</button>
+        </div>
+      </aside>
+
+      <!-- Admin Pages Container -->
+      <div class="content-area">
+        
+        <!-- Page: Statement Audit -->
+        <div id="page_adm_recon" class="sub-page active">
+          <div class="page-header">
+            <h1 class="page-title">Monthly Statement & Reconciliation</h1>
+            <p class="page-subtitle">Generate statements, aggregate sales, and verify ledger consistency</p>
+          </div>
+
+          <div class="card">
+            <div class="grid" style="align-items: end; grid-template-columns: 1fr 1fr auto; gap: 12px; margin-bottom: 0;">
+              <div>
+                <label for="r_y">Audit Year</label>
+                <input id="r_y" type="number" value="${n.getFullYear()}">
+              </div>
+              <div>
+                <label for="r_m">Audit Month</label>
+                <input id="r_m" type="number" min="1" max="12" value="${n.getMonth() + 1}">
+              </div>
+              <div style="margin-bottom: 12px;">
+                <button onclick="report()" style="height: 40px;">Generate Statement</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="rep"></div>
+        </div>
+
+        <!-- Page: Settlements -->
+        <div id="page_adm_settle" class="sub-page">
+          <div class="page-header">
+            <h1 class="page-title">Merchant Settlements</h1>
+            <p class="page-subtitle">Disbursement breakdown and gross vs net payable reconciliation</p>
+          </div>
+          <div id="rep_settle_view">
+            <div class="card"><p style="color:var(--ink-muted); font-size:13px;">Generate an audit statement on the Statement Audit page to populate this schedule.</p></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+  report();
+}
+
+function report() {
+  run(async () => {
+    const y = $("r_y").value;
+    const m = $("r_m").value;
+    const r = await api(`/reconciliation/monthly?year=${y}&month=${m}`);
+
+    $("rep").innerHTML = `
+      <div class="grid">
+        <div class="card">
+          <div class="label-muted">Accounting Period</div>
+          <div class="metric-value" style="font-size: 24px;">${esc(r.period)}</div>
+          <div class="metric-sub">${r.total_transactions} settlements audited</div>
+        </div>
+
+        <div class="card">
+          <div class="label-muted">Gross Sales Volume</div>
+          <div class="metric-value">${inr(r.total_sales)}</div>
+          <div class="metric-sub">${(r.total_sales_paise || (r.total_sales*100)).toLocaleString('en-IN')} paise</div>
+        </div>
+
+        <div class="card">
+          <div class="label-muted">Cashback Disbursed</div>
+          <div class="metric-value pos">${inr(r.total_cashback)}</div>
+          <div class="metric-sub">${(r.total_cashback_paise || (r.total_cashback*100)).toLocaleString('en-IN')} paise</div>
+        </div>
+
+        <div class="card">
+          <div class="label-muted">Ledger Integrity</div>
+          <div style="margin-top: 6px;">
+            <span class="badge ${r.status === 'BALANCED' ? 'badge-ok' : 'badge-bad'}" style="font-size: 12px; padding: 4px 10px;">
+              ${r.status === 'BALANCED' ? 'STATUS: BALANCED' : 'AUDIT: MISMATCH DETECTED'}
+            </span>
+          </div>
+          <div class="metric-sub">${r.wallet_mismatches.length} variance issues detected</div>
+        </div>
+      </div>
+    `;
+
+    const settleHtml = `
+      <div class="card">
+        <h2>Merchant Settlement Schedule (${esc(r.period)})</h2>
+        ${r.merchants.length ? `
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Merchant Name</th>
+                  <th>Category</th>
+                  <th class="numeric">Transactions</th>
+                  <th class="numeric">Gross Volume</th>
+                  <th class="numeric">Cashback Given</th>
+                  <th class="numeric">Net Payable</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${r.merchants.map(m => `
+                  <tr>
+                    <td><b>${esc(m.business_name)}</b></td>
+                    <td><span class="badge badge-neutral">${esc(m.category)}</span></td>
+                    <td class="numeric">${m.transactions}</td>
+                    <td class="numeric">${inr(m.gross_sales)}</td>
+                    <td class="numeric pos">${inr(m.cashback_given)}</td>
+                    <td class="numeric" style="font-weight: 700;">${inr(m.settlement_due)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        ` : `<p style="font-size: 13.5px; color: var(--ink-muted);">No transaction volume recorded for this period.</p>`}
+      </div>
+    `;
+
+    const settleContainer = $("rep_settle_view");
+    if (settleContainer) settleContainer.innerHTML = settleHtml;
+  });
+}
+
+token ? enter() : authView();
+</script>
+</body>
+</html>
