@@ -1,6 +1,6 @@
 # 💳 FinPay — Institutional Campus Payments, Digital Wallet & Automated Cashback
 
-> 📄 **Official Design Document:** The detailed laboratory manual, 3NF normalization proofs, algorithm pseudocode, and security decisions are preserved in [LAB4_DETAILED_DESIGN.md](LAB4_DETAILED_DESIGN.md).
+> 📄 **Official Design Document:** The detailed laboratory manual, 3NF normalization proofs, algorithm pseudocode, and security decisions are preserved in [LAB4_DETAILED_DESIGN.md](LAB4_DETAILED_DESIGN.md) and the original Word document is available at [docs/FinPay_Lab4_Detailed_Design.docx](docs/FinPay_Lab4_Detailed_Design.docx).
 
 FinPay is a closed-loop digital campus payment and wallet platform built with **Python, FastAPI, SQLAlchemy, and SQLite**. 
 
